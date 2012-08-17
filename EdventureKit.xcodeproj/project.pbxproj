@@ -21,6 +21,7 @@
 		3FA01AB915DED37E0058D04A /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01AAE15DED37E0058D04A /* AFXMLRequestOperation.m */; };
 		3FA01ABA15DED37E0058D04A /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01AB015DED37E0058D04A /* UIImageView+AFNetworking.m */; };
 		3FA01ABF15DED3D40058D04A /* EDNTUAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */; };
+		3FA01ACB15DEE0360058D04A /* LBCHTTPPostBody.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01ACA15DEE0360058D04A /* LBCHTTPPostBody.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -65,6 +66,8 @@
 		3FA01AB015DED37E0058D04A /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
 		3FA01ABD15DED3D40058D04A /* EDNTUAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EDNTUAccount.h; sourceTree = "<group>"; };
 		3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EDNTUAccount.m; sourceTree = "<group>"; };
+		3FA01AC915DEE0360058D04A /* LBCHTTPPostBody.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LBCHTTPPostBody.h; sourceTree = "<group>"; };
+		3FA01ACA15DEE0360058D04A /* LBCHTTPPostBody.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LBCHTTPPostBody.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +130,7 @@
 		3FA01A1B15DED36B0058D04A /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				3FA01AC815DEE0360058D04A /* LBCHTTPPostBody */,
 				3FA01A9B15DED37E0058D04A /* AFNetworking */,
 			);
 			path = Vendor;
@@ -176,6 +180,15 @@
 				3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */,
 			);
 			path = Authentication;
+			sourceTree = "<group>";
+		};
+		3FA01AC815DEE0360058D04A /* LBCHTTPPostBody */ = {
+			isa = PBXGroup;
+			children = (
+				3FA01AC915DEE0360058D04A /* LBCHTTPPostBody.h */,
+				3FA01ACA15DEE0360058D04A /* LBCHTTPPostBody.m */,
+			);
+			path = LBCHTTPPostBody;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -241,6 +254,7 @@
 				3FA01AB915DED37E0058D04A /* AFXMLRequestOperation.m in Sources */,
 				3FA01ABA15DED37E0058D04A /* UIImageView+AFNetworking.m in Sources */,
 				3FA01ABF15DED3D40058D04A /* EDNTUAccount.m in Sources */,
+				3FA01ACB15DEE0360058D04A /* LBCHTTPPostBody.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
