@@ -104,69 +104,81 @@ NSString *const EDNTUErrorDomain = @"EDNTUErrorDomain";
 
     NSDictionary *dict = @{@"UserName" : self.username,  @"PIN" : self.password, @"Domain" : self.domain};
     [self generatePostURLRequestForURL:[NSURL URLWithString:AUTH_URL] postDictionary:dict completion:^(NSMutableURLRequest *urlRequest) {
-        if (urlRequest) {
-            // do wis
-            AFHTTPRequestOperation *wisRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
-            
-            [wisRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (!urlRequest) {
+            if (completion)
+                completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
 
-                if ([operation.responseString rangeOfString:AUTH_ERROR_STRING].location == NSNotFound) {
-                    NSArray *cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:[responseObject allHeaderFields] forURL:[NSURL URLWithString:AUTH_URL]];
-                    for (NSHTTPCookie *cookie in cookies) {
-                        if ([cookie.domain isEqualToString:@".wis.ntu.edu.sg"] || [cookie.domain isEqualToString:@"edventure.ntu.edu.sg"])
-                            [_authCookies addObject:cookie];
-                    }
+            return;
 
-                    // do token request
-                    NSURLRequest *tokenURLRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:TOKEN_URL]
-                                                                     cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
-                                                                 timeoutInterval:30.0];
+        }
+        
+        // do wis
+        AFHTTPRequestOperation *wisRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+        
+        [wisRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
 
-                    AFHTTPRequestOperation *tokenRequest = [[AFHTTPRequestOperation alloc] initWithRequest:tokenURLRequest];
-                    [tokenRequest setAuthenticationChallengeBlock:^(NSURLConnection *connection, NSURLAuthenticationChallenge *challenge) {
-                        NSURLCredential *tokenCredential = [NSURLCredential credentialWithUser:self.username
-                                                                                      password:self.password
-                                                                                   persistence:NSURLCredentialPersistenceNone];
-                        [[challenge sender] useCredential:tokenCredential forAuthenticationChallenge:challenge];
-                    }];
+            // error!
+            if ([operation.responseString rangeOfString:AUTH_ERROR_STRING].location != NSNotFound) {
+                if (completion)
+                    completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountWISSignOnError userInfo:nil]);
 
-                    [tokenRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                        _authenticated = YES;
+                return;
+            }
 
-                        // match regex, first one is studentid, second one is secretToken
+            // we have a winner, save the authentication cookies!
+            NSArray *cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:[responseObject allHeaderFields] forURL:[NSURL URLWithString:AUTH_URL]];
+            for (NSHTTPCookie *cookie in cookies) {
+                if ([cookie.domain isEqualToString:@".wis.ntu.edu.sg"] || [cookie.domain isEqualToString:@"edventure.ntu.edu.sg"])
+                    [_authCookies addObject:cookie];
+            }
 
-                        if (completion)
-                            completion(YES, nil);
+            // now do token request
+            NSURLRequest *tokenURLRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:TOKEN_URL]
+                                                             cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                         timeoutInterval:30.0];
 
-                    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                        if (completion)
-                            completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }]);
-                    }];
+            AFHTTPRequestOperation *tokenRequest = [[AFHTTPRequestOperation alloc] initWithRequest:tokenURLRequest];
+            [tokenRequest setAuthenticationChallengeBlock:^(NSURLConnection *connection, NSURLAuthenticationChallenge *challenge) {
+                NSURLCredential *tokenCredential = [NSURLCredential credentialWithUser:self.username
+                                                                              password:self.password
+                                                                           persistence:NSURLCredentialPersistenceNone];
+                [[challenge sender] useCredential:tokenCredential forAuthenticationChallenge:challenge];
+            }];
 
-                    [tokenRequest start];
-                    [tokenRequest release];
-                    
-
-                } else {
+            [tokenRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSArray *captureGroups = [_tokenRegex matchesInString:operation.responseString options:0 range:NSMakeRange(0, [operation.responseString length])];
+                if ([captureGroups count] < 3) {
                     if (completion)
-                        completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountWISSignOnError userInfo:nil]);
-                    
+                        completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountTokenSignOnError userInfo:nil]);
+
+                    return;
                 }
+
+                _authenticated = YES;
+
+                _studentID = [operation.responseString substringWithRange:[[captureGroups objectAtIndex:1] range]];
+                _secretToken = [operation.responseString substringWithRange: [[captureGroups objectAtIndex:2] range]];
+
+                if (completion)
+                    completion(YES, nil);
 
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                 if (completion)
                     completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }]);
-                
             }];
 
-            [wisRequest start];
-            [wisRequest release];
+            [tokenRequest start];
+            [tokenRequest release];
+                
 
-        } else {
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             if (completion)
-                completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
+                completion(NO, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }]);
             
-        }
+        }];
+
+        [wisRequest start];
+        [wisRequest release];
     }];
     
 }
