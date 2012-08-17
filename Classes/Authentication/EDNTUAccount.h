@@ -10,7 +10,11 @@
 
 typedef void (^EDNTUAccountAuthCompletionHandler)(BOOL success, NSError *error);
 
+extern NSString *const EDNTUAccountErrorDomain;
+
 typedef enum {
+    EDNTUAccountNetworkError,
+    EDNTUAccountPOSTGenerationError,
     EDNTUAccountAlreadyAuthenticatedError,
     EDNTUAccountTokenSignOnError,
     EDNTUAccountWISSignOnError,
