@@ -18,7 +18,9 @@ typedef enum {
     EDNTUAccountBatchOperationError,
     EDNTUAccountNetworkError,
     EDNTUAccountPOSTGenerationError,
+    EDNTUAccountInvalidCredentialsError,
     EDNTUAccountAlreadyAuthenticatedError,
+    EDNTUAccountNotAutnenticatedError,
     EDNTUAccountTokenSignOnError,
     EDNTUAccountWISSignOnError,
     EDNTUAccountEdventureError
@@ -30,9 +32,14 @@ typedef enum {
 @property (nonatomic, copy) NSString *domain;
 
 @property (readonly) NSString *studentID;
+@property (readonly) NSString *secretToken;
+@property (readonly) NSArray *authCookies;
+
 @property (readonly, getter = isAuthenticated) BOOL authenticated;
 
 -(id)initWithUsername:(NSString *)username password:(NSString *)password domain:(NSString *)domain;
 -(void)performAuthenticationWithCompletion:(EDNTUAccountAuthCompletionHandler)completion;
 -(void)performSignOffWithCompletion:(EDNTUAccountAuthCompletionHandler)completion;
+
+-(void)generateAuthenticatedRequestForURL:(NSURL *)url postValues:(NSDictionary *)postValues completion:(void (^)(NSURLRequest *request, NSError *error))completion;
 @end

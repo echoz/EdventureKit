@@ -25,16 +25,13 @@ NSString *const EDNTUAccountWISUnderlyingError = @"EDNTUAccountWISUnderlyingErro
 NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlyingError";
 
 @implementation EDNTUAccount {
-    NSMutableArray *_cookies;
-    NSMutableArray *_authCookies;
-    NSString *_secretToken;
     NSRegularExpression *_tokenRegex;
 
     BOOL _wisAuth;
     BOOL _tokenAuth;
 }
 @synthesize username = _username, password = _password, domain = _domain;
-@synthesize studentID = _studentID, authenticated = _authenticated;
+@synthesize studentID = _studentID, secretToken = _secretToken, authCookies = _authCookies, authenticated = _authenticated;
 
 #pragma mark - Object Life Cycle
 
@@ -47,7 +44,6 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
         _authenticated = NO;
         _studentID = nil;
 
-        _cookies = [[NSMutableArray arrayWithCapacity:0] retain];
         _authCookies = [[NSMutableArray arrayWithCapacity:0] retain];
         _secretToken = nil;
 
@@ -63,7 +59,6 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
     [_domain release], _domain = nil;
 
     [_studentID release], _studentID = nil;
-    [_cookies release], _cookies = nil;
     [_authCookies release], _authCookies = nil;
 
     [_secretToken release], _secretToken = nil;
@@ -74,7 +69,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
 
 #pragma mark - Network Request
 
--(void)generatePostURLRequestForURL:(NSURL *)url postDictionary:(NSDictionary *)postValues completion:(void (^)(NSMutableURLRequest *urlRequest))completion {
+-(void)generatePostURLRequestForURL:(NSURL *)url postDictionary:(NSDictionary *)postValues completion:(void (^)(NSMutableURLRequest *urlRequest, NSError *error))completion {
     NSAssert1((completion != nil), @"Completion cannot be nil", nil);
 
     [LBCHTTPPostBody performAutomaticHTTPBodyGenerationOfParameters:postValues completion:^(BOOL isStreamFile, NSString *contentType, NSString *contentLength, id result, NSError *error) {
@@ -89,10 +84,44 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             request.HTTPBody = result;
             request.HTTPMethod = @"POST";
 
-            completion([request autorelease]);
+            completion([request autorelease], nil);
 
         } else {
-            completion(nil);
+            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
+        }
+    }];
+}
+
+-(void)generateAuthenticatedRequestForURL:(NSURL *)url postValues:(NSDictionary *)postValues completion:(void (^)(NSURLRequest *, NSError *))completion {
+    NSAssert1((completion != nil), @"Completion cannot be nil", nil);
+
+    if (!self.authenticated) {
+        if (completion)
+            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNotAutnenticatedError userInfo:nil]);
+        return;
+    }
+
+    NSMutableDictionary *finaldict = [NSMutableDictionary dictionaryWithDictionary:postValues];
+
+
+
+
+    [LBCHTTPPostBody performAutomaticHTTPBodyGenerationOfParameters:finaldict completion:^(BOOL isStreamFile, NSString *contentType, NSString *contentLength, id result, NSError *error) {
+        if ((result) || (!isStreamFile)) {
+            NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url
+                                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                                    timeoutInterval:30.0];
+
+            [request setValue:HTTP_USER_AGENT forHTTPHeaderField:@"User-Agent"];
+            [request setValue:contentType forHTTPHeaderField:@"Content-Type"];
+            [request setValue:contentLength forHTTPHeaderField:@"Content-Length"];
+            request.HTTPBody = result;
+            request.HTTPMethod = @"POST";
+
+            completion([request autorelease], nil);
+
+        } else {
+            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
         }
     }];
 }
@@ -100,12 +129,25 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
 #pragma mark - Authentication
 
 -(void)performSignOffWithCompletion:(EDNTUAccountAuthCompletionHandler)completion {
-    
+    _authenticated = NO;
+    [(NSMutableArray *)_authCookies removeAllObjects];
+    [_secretToken release], _secretToken = nil;
+    [_studentID release], _studentID = nil;
 }
 
 -(void)performAuthenticationWithCompletion:(EDNTUAccountAuthCompletionHandler)completion {
-    if ((!self.isAuthenticated) || ([self.username length] == 0) || ([self.password length] == 0) || (self.domain == 0))
+    if (self.isAuthenticated) {
+        if (completion)
+            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountAlreadyAuthenticatedError userInfo:nil]);
         return;
+
+    }
+
+    if (([self.username length] == 0) || ([self.password length] == 0) || (self.domain == 0)) {
+        if (completion)
+            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountInvalidCredentialsError userInfo:nil]);
+        return;
+    }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         dispatch_group_t authGroup = dispatch_group_create();
@@ -118,9 +160,9 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
         
         dispatch_group_enter(authGroup);
         NSDictionary *dict = @{@"UserName" : self.username,  @"PIN" : self.password, @"Domain" : self.domain};
-        [self generatePostURLRequestForURL:[NSURL URLWithString:AUTH_URL] postDictionary:dict completion:^(NSMutableURLRequest *urlRequest) {
+        [self generatePostURLRequestForURL:[NSURL URLWithString:AUTH_URL] postDictionary:dict completion:^(NSMutableURLRequest *urlRequest, NSError *error) {
             if (!urlRequest) {
-                wisError = [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil];
+                wisError = error;
                 dispatch_group_leave(authGroup);
                 return;
 
@@ -141,7 +183,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
                 NSArray *cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:[responseObject allHeaderFields] forURL:[NSURL URLWithString:AUTH_URL]];
                 for (NSHTTPCookie *cookie in cookies) {
                     if ([cookie.domain isEqualToString:@".wis.ntu.edu.sg"] || [cookie.domain isEqualToString:@"edventure.ntu.edu.sg"])
-                        [_authCookies addObject:cookie];
+                        [(NSMutableArray *)_authCookies addObject:cookie];
                 }
 
                 _wisAuth = YES;
@@ -178,8 +220,14 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
                 return;
             }
 
-            _studentID = [operation.responseString substringWithRange:[[captureGroups objectAtIndex:1] range]];
-            _secretToken = [operation.responseString substringWithRange: [[captureGroups objectAtIndex:2] range]];
+            if (_studentID)
+                [_studentID release], _studentID = nil;
+
+            if (_secretToken)
+                [_secretToken release], _secretToken = nil;
+                
+            _studentID = [[operation.responseString substringWithRange:[[captureGroups objectAtIndex:1] range]] copy];
+            _secretToken = [[operation.responseString substringWithRange: [[captureGroups objectAtIndex:2] range]] copy];
             
             tokenError = nil;
             _tokenAuth = YES;
