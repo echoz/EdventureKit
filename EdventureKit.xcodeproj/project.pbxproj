@@ -20,7 +20,7 @@
 		3FA01AB815DED37E0058D04A /* AFURLConnectionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01AAC15DED37E0058D04A /* AFURLConnectionOperation.m */; };
 		3FA01AB915DED37E0058D04A /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01AAE15DED37E0058D04A /* AFXMLRequestOperation.m */; };
 		3FA01ABA15DED37E0058D04A /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01AB015DED37E0058D04A /* UIImageView+AFNetworking.m */; };
-		3FA01ABF15DED3D40058D04A /* EDNTUAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */; };
+		3FA01ABF15DED3D40058D04A /* EVKAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01ABE15DED3D40058D04A /* EVKAccount.m */; };
 		3FA01ACB15DEE0360058D04A /* LBCHTTPPostBody.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FA01ACA15DEE0360058D04A /* LBCHTTPPostBody.m */; };
 /* End PBXBuildFile section */
 
@@ -64,8 +64,8 @@
 		3FA01AAE15DED37E0058D04A /* AFXMLRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFXMLRequestOperation.m; sourceTree = "<group>"; };
 		3FA01AAF15DED37E0058D04A /* UIImageView+AFNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+AFNetworking.h"; sourceTree = "<group>"; };
 		3FA01AB015DED37E0058D04A /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
-		3FA01ABD15DED3D40058D04A /* EDNTUAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EDNTUAccount.h; sourceTree = "<group>"; };
-		3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EDNTUAccount.m; sourceTree = "<group>"; };
+		3FA01ABD15DED3D40058D04A /* EVKAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EVKAccount.h; sourceTree = "<group>"; };
+		3FA01ABE15DED3D40058D04A /* EVKAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EVKAccount.m; sourceTree = "<group>"; };
 		3FA01AC915DEE0360058D04A /* LBCHTTPPostBody.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LBCHTTPPostBody.h; sourceTree = "<group>"; };
 		3FA01ACA15DEE0360058D04A /* LBCHTTPPostBody.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LBCHTTPPostBody.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -176,8 +176,8 @@
 		3FA01ABC15DED3A50058D04A /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
-				3FA01ABD15DED3D40058D04A /* EDNTUAccount.h */,
-				3FA01ABE15DED3D40058D04A /* EDNTUAccount.m */,
+				3FA01ABD15DED3D40058D04A /* EVKAccount.h */,
+				3FA01ABE15DED3D40058D04A /* EVKAccount.m */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -253,7 +253,7 @@
 				3FA01AB815DED37E0058D04A /* AFURLConnectionOperation.m in Sources */,
 				3FA01AB915DED37E0058D04A /* AFXMLRequestOperation.m in Sources */,
 				3FA01ABA15DED37E0058D04A /* UIImageView+AFNetworking.m in Sources */,
-				3FA01ABF15DED3D40058D04A /* EDNTUAccount.m in Sources */,
+				3FA01ABF15DED3D40058D04A /* EVKAccount.m in Sources */,
 				3FA01ACB15DEE0360058D04A /* LBCHTTPPostBody.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -345,6 +345,7 @@
 				3FA01A1A15DED2490058D04A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

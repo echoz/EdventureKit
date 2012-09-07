@@ -1,12 +1,12 @@
 //
-//  EDNTUAccount.m
+//  EVKAccount.m
 //  EdventureKit
 //
 //  Created by Jeremy Foo on 18/8/12.
 //  Copyright (c) 2012 Jeremy Foo. All rights reserved.
 //
 
-#import "EDNTUAccount.h"
+#import "EVKAccount.h"
 #import "AFNetworking.h"
 #import "LBCHTTPPostBody.h"
 
@@ -20,11 +20,11 @@
 
 #define EDVENTURE_LOGIN_CHECK @"<input value=\"/ntu_post_login.html\" name=\"new_loc\" type=\"hidden\">"
 
-NSString *const EDNTUErrorDomain = @"EDNTUErrorDomain";
-NSString *const EDNTUAccountWISUnderlyingError = @"EDNTUAccountWISUnderlyingError";
-NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlyingError";
+NSString *const EVKErrorDomain = @"EVKErrorDomain";
+NSString *const EVKAccountWISUnderlyingError = @"EVKAccountWISUnderlyingError";
+NSString *const EVKAccountTokenUnderlyingError = @"EVKAccountTokenUnderlyingError";
 
-@implementation EDNTUAccount {
+@implementation EVKAccount {
     NSRegularExpression *_tokenRegex;
 
     BOOL _wisAuth;
@@ -87,7 +87,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             completion([request autorelease], nil);
 
         } else {
-            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountPOSTGenerationError userInfo:nil]);
         }
     }];
 }
@@ -97,7 +97,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
 
     if (!self.authenticated) {
         if (completion)
-            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNotAutnenticatedError userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountNotAutnenticatedError userInfo:nil]);
         return;
     }
 
@@ -121,31 +121,31 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             completion([request autorelease], nil);
 
         } else {
-            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountPOSTGenerationError userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountPOSTGenerationError userInfo:nil]);
         }
     }];
 }
 
 #pragma mark - Authentication
 
--(void)performSignOffWithCompletion:(EDNTUAccountAuthCompletionHandler)completion {
+-(void)performSignOffWithCompletion:(EVKAccountAuthCompletionHandler)completion {
     _authenticated = NO;
     [(NSMutableArray *)_authCookies removeAllObjects];
     [_secretToken release], _secretToken = nil;
     [_studentID release], _studentID = nil;
 }
 
--(void)performAuthenticationWithCompletion:(EDNTUAccountAuthCompletionHandler)completion {
+-(void)performAuthenticationWithCompletion:(EVKAccountAuthCompletionHandler)completion {
     if (self.isAuthenticated) {
         if (completion)
-            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountAlreadyAuthenticatedError userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountAlreadyAuthenticatedError userInfo:nil]);
         return;
 
     }
 
     if (([self.username length] == 0) || ([self.password length] == 0) || (self.domain == 0)) {
         if (completion)
-            completion(nil, [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountInvalidCredentialsError userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountInvalidCredentialsError userInfo:nil]);
         return;
     }
 
@@ -174,7 +174,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             [wisRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                 // error!
                 if ([operation.responseString rangeOfString:AUTH_ERROR_STRING].location != NSNotFound) {
-                    wisError = [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountWISSignOnError userInfo:nil];
+                    wisError = [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountWISSignOnError userInfo:nil];
                     dispatch_group_leave(authGroup);
                     return;
                 }
@@ -191,7 +191,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
                 dispatch_group_leave(authGroup);
 
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                wisError = [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }];
+                wisError = [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }];
                 dispatch_group_leave(authGroup);
             }];
             
@@ -215,7 +215,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
         [tokenRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSArray *captureGroups = [_tokenRegex matchesInString:operation.responseString options:0 range:NSMakeRange(0, [operation.responseString length])];
             if ([captureGroups count] < 3) {
-                tokenError = [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountTokenSignOnError userInfo:nil];
+                tokenError = [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountTokenSignOnError userInfo:nil];
                 dispatch_group_leave(authGroup);
                 return;
             }
@@ -234,7 +234,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             dispatch_group_leave(authGroup);
 
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            tokenError = [NSError errorWithDomain:EDNTUAccountErrorDomain code:EDNTUAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }];
+            tokenError = [NSError errorWithDomain:EVKAccountErrorDomain code:EVKAccountNetworkError userInfo:@{ NSUnderlyingErrorKey : error }];
             dispatch_group_leave(authGroup);
         }];
         
@@ -250,7 +250,7 @@ NSString *const EDNTUAccountTokenUnderlyingError = @"EDNTUAccountTokenUnderlying
             if (completion)
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ((wisError) && (tokenError)) {
-                        completion(NO, [NSError errorWithDomain:EDNTUErrorDomain code:EDNTUAccountBatchOperationError userInfo:@{ EDNTUAccountWISUnderlyingError : wisError, EDNTUAccountTokenUnderlyingError : tokenError }]);
+                        completion(NO, [NSError errorWithDomain:EVKErrorDomain code:EVKAccountBatchOperationError userInfo:@{ EVKAccountWISUnderlyingError : wisError, EVKAccountTokenUnderlyingError : tokenError }]);
                         return;
                     }
 
